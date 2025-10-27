@@ -1,26 +1,25 @@
 
-// for editing the task
+//for editing the task
 let editIndex = null;
 
 
-
-// DOM elements
+//DOM elements
 const todoForm = document.getElementById("todoForm");
 const taskList = document.getElementById("taskList");
 
-// Right column lists
+//Right column lists
 const pendingList = document.getElementById("pendingList");
 const inprocessList = document.getElementById("inprocessList");
 const completedList = document.getElementById("completedList");
 
 
 
-// Load tasks on page load so data fetched from local stoarage
+//Load tasks on page load so data fetched from local stoarage
 document.addEventListener("DOMContentLoaded", loadAllTasks);
 
 
 
-// logic for form submisson 
+//logic for form submisson 
 todoForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
@@ -35,13 +34,15 @@ todoForm.addEventListener("submit", function (event) {
   }
 
   const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  // Update existing task
+  //Update existing task
   if (editIndex !== null) {
     tasks[editIndex] = { title, desc, date, status };
     editIndex = null;
     alert("Task edited successfully!");
   } else {
-    tasks.push({ title, desc, date, status });  // Add new task
+    // tasks.push({ title, desc, date, status });  // Add new task
+    tasks.unshift({ title, desc, date, status });  // Adds task at the BEGINNING
+
     alert("Task added successfully!");
   }
 
@@ -52,7 +53,7 @@ todoForm.addEventListener("submit", function (event) {
 
 
 
-// Create a draggable task card wrapped in grid column
+//Creating a draggable task card 
 function createTaskCard(task, index) {
   const col = document.createElement("div");
   col.classList.add("col");
@@ -77,6 +78,8 @@ function createTaskCard(task, index) {
     `;
 
   //Event: Drag card
+
+  // for starting draging
   card.addEventListener("dragstart", (event) => {
     event.dataTransfer.setData("text/plain", index);
     setTimeout(() => {
@@ -84,11 +87,12 @@ function createTaskCard(task, index) {
     }, 0);
   });
 
+  //draggin stop
   card.addEventListener("dragend", () => {
     card.style.opacity = "1";
   });
 
-  // --- Edit button ---
+  //--- Edit button ---
   card.querySelector(".btn-edit").addEventListener("click", () => {
     document.getElementById("taskTitle").value = task.title;
     document.getElementById("taskDesc").value = task.desc;
@@ -97,13 +101,16 @@ function createTaskCard(task, index) {
     editIndex = index;
   });
 
-  // --- Delete button ---
+  //--- Delete button ---
   card.querySelector(".btn-delete").addEventListener("click", () => deleteTask(index));
   col.appendChild(card);
   return col;
 }
 
-// Load all tasks and render
+
+
+
+//Load all tasks and render
 function loadAllTasks() {
   taskList.innerHTML = "";
   pendingList.innerHTML = "";
@@ -120,31 +127,28 @@ function loadAllTasks() {
     return;
   }
 
-  tasks.slice().reverse()
-    .forEach((task, reverseIndex) => {
-      const index = tasks.length - 1 - reverseIndex;
+  tasks.forEach((task, index) => {
+    // Left column all task list below our input from user
+    const leftCard = createTaskCard(task, index);
+    taskList.appendChild(leftCard);
 
-      // Left column all task list below our input from user
-      const leftCard = createTaskCard(task, index);
-      taskList.appendChild(leftCard);
-
-      // Right column list of task based on the status
-      let rightCol;
-      switch (task.status) {
-        case "Pending":
-          rightCol = pendingList;
-          break;
-        case "Inprocess":
-          rightCol = inprocessList;
-          break;
-        case "Completed":
-          rightCol = completedList;
-          break;
-        default:
-          return;
-      }
-      rightCol.appendChild(createTaskCard(task, index));
-    });
+    // Right column list of task based on the status
+    let rightCol;
+    switch (task.status) {
+      case "Pending":
+        rightCol = pendingList;
+        break;
+      case "Inprocess":
+        rightCol = inprocessList;
+        break;
+      case "Completed":
+        rightCol = completedList;
+        break;
+      default:
+        return;
+    }
+    rightCol.appendChild(createTaskCard(task, index));
+  });
 
   // Show placeholder if section empty
   if (pendingList.children.length === 0)
@@ -166,6 +170,7 @@ function deleteTask(index) {
 
 // Drag and Drop handling for right column
 [pendingList, inprocessList, completedList].forEach((list) => {
+
   list.addEventListener("dragover", (event) => {
     event.preventDefault();
     list.classList.add("drag-over");
@@ -175,13 +180,14 @@ function deleteTask(index) {
     list.classList.remove("drag-over");
   });
 
+
   list.addEventListener("drop", (event) => {
     event.preventDefault();
     list.classList.remove("drag-over");
 
-    const index = event.dataTransfer.getData("text/plain");
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    const task = tasks[index];
+    const index = event.dataTransfer.getData("text/plain");             //which task was dragged by their index 
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];      //get all data from local stoarge
+    const task = tasks[index];                                          //using specfic index extract object
     if (!task) return;
 
     // Update task status based on drop target
