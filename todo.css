@@ -190,7 +190,7 @@ body {
 #inprocessList,
 #completedList {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); 
+    grid-template-columns: repeat(2, 1fr); 
     gap: 16px;
     max-height: calc(2 * (100px + 16px));  
     overflow-y: auto;                      
@@ -217,7 +217,7 @@ body {
   min-height: 120px;          
   border-radius: 10px;
   padding: 10px;
-  background-color: #f9fafb;
+  /* background-color: #f9fafb; */
   transition: background-color 0.3s ease;
 }
 
